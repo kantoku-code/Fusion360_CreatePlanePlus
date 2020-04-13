@@ -33,6 +33,9 @@ https://knowledge.autodesk.com/ja/support/fusion-360/troubleshooting/caas/sfdcar
 + Fusion360 Ver2.0.7830
 + Windows10 64bit Pro,Home
 
+## 残された問題:
+ルートコンポーネントと異なる原点を持つコンポーネントの要素を指定した場合、正しい位置に平面が作成されません。
+
 ## ライセンス:
 MIT
 
