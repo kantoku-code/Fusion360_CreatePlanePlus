@@ -35,15 +35,19 @@ class ViewPlane(Fusion360CommandBase):
         ao = AppObjects()
         try:
             global _clickPoint
-            fact = ViewPlaneFactry(_clickPoint)
+            fact = PlaneFactry(_clickPoint)
             fact.exec()
 
         except:
             if ao.ui:
                 ao.ui.messageBox('Failed:\n{}'.format(traceback.format_exc()))
+            pass
 
     def on_create(self, command: adsk.core.Command, inputs: adsk.core.CommandInputs):
         ao = AppObjects()
+
+        # comp Position check
+        command.isPositionDependent=True
 
         # event
         onSelect = self.SelectHandler()
@@ -60,6 +64,11 @@ class ViewPlane(Fusion360CommandBase):
         global _selInfo
         inputs.addSelectionInput(_selInfo[0], _selInfo[1], _selInfo[2])
 
+    # -- Support functions --
+    def isPositionUndetermined(self) -> bool:
+        ao = AppObjects()
+        pnl = ao.ui.allToolbarPanels.itemById('SnapshotPanel')
+        return pnl.isVisible
 
     # -- Support class --
     class SelectHandler(adsk.core.SelectionEventHandler):
@@ -82,11 +91,11 @@ class ViewPlane(Fusion360CommandBase):
             global _clickPoint
             _clickPoint = None
 
-class ViewPlaneFactry():
+class PlaneFactry():
 
     _pnt = adsk.core.Point3D.cast(None)
 
-    def __init__(self, 
+    def __init__(self,
         pnt :adsk.core.Point3D):
 
         self._pnt = pnt
@@ -100,7 +109,7 @@ class ViewPlaneFactry():
 
             cam :adsk.core.Camera = ao.app.activeViewport.camera
             vec :adsk.core.Vector3D = cam.eye.vectorTo(cam.target)
-            vec.scaleBy(0.5)
+            vec.scaleBy(0.1)
 
             tmpPnt :adsk.core.Point3D = pnt.copy()
             tmpPnt.translateBy(vec)
@@ -119,16 +128,45 @@ class ViewPlaneFactry():
 
         def initPlane(
             plns :adsk.fusion.ConstructionPlanes,
-            lne :adsk.fusion.SketchLine):
+            lne :adsk.fusion.SketchLine) -> adsk.fusion.ConstructionPlane:
 
             plnInput = plns.createInput()
             dist = adsk.core.ValueInput.createByReal(0)
+            pln :adsk.fusion.ConstructionPlane = None
             if plnInput.setByDistanceOnPath(lne, dist):
-                plns.add(plnInput)
+                pln = plns.add(plnInput)
+
+            return pln
+
+        # def GetRootMatrix(
+        #     comp :adsk.fusion.Component) -> adsk.core.Matrix3D:
+            
+        #     des = adsk.fusion.Design.cast(comp.parentDesign)
+        #     root = des.rootComponent
+
+        #     mat = adsk.core.Matrix3D.create()
+        
+        #     if comp == root:
+        #         return mat
+
+        #     occs = root.allOccurrencesByComponent(comp)
+        #     if len(occs) < 1:
+        #         return mat
+
+        #     occ = occs[0]
+        #     occ_names = occ.fullPathName.split('+')
+        #     occs = [root.allOccurrences.itemByName(name) 
+        #                 for name in occ_names]
+        #     mat3ds = [occ.transform for occ in occs]
+        #     # mat3ds.reverse() #important!!
+        #     for mat3d in mat3ds:
+        #         mat.transformBy(mat3d)
+
+        #     return mat
 
         # start
         ao = AppObjects()
-        root :adsk.fusion.Component = ao.root_comp
+        comp :adsk.fusion.Component = ao.design.activeComponent
 
         # DesignType check
         desTypes = adsk.fusion.DesignTypes
@@ -137,22 +175,26 @@ class ViewPlaneFactry():
         # Parametric
         baseFeat = adsk.fusion.BaseFeature.cast(None)
         if desTypeParam:
-            baseFeats = root.features.baseFeatures
-            baseFeat = baseFeats.add()
+            baseFeats = comp.features.baseFeatures
+            baseFeat :adsk.fusion.BaseFeature = baseFeats.add()
 
             baseFeat.startEdit()
 
         # create sketch
         global _supportSktName
-        skt :adsk.fusion.Sketch = initSketch(root, _supportSktName)
+        skt :adsk.fusion.Sketch = initSketch(comp, _supportSktName)
         skt.isLightBulbOn = False
 
         # supprt line
         line :adsk.fusion.SketchLine = initSupportLine(skt, self._pnt)
 
         # plane
-        planes :adsk.fusion.ConstructionPlanes = root.constructionPlanes
-        initPlane(planes, line)
+        planes :adsk.fusion.ConstructionPlanes = comp.constructionPlanes
+        plane :adsk.fusion.ConstructionPlane = initPlane(planes, line)
+
+        # mat
+        # mat :adsk.core.Matrix3D = GetRootMatrix(comp)
+        # plane.transform = mat
 
         # remove sketch
         skt.deleteMe()

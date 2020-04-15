@@ -35,7 +35,7 @@ class NormalPlane(Fusion360CommandBase):
         ao = AppObjects()
         try:
             global _clickPoint, _selInfo
-            fact = ViewPlaneFactry(input_values[_selInfo[0]][0], _clickPoint)
+            fact = PlaneFactry(input_values[_selInfo[0]][0], _clickPoint)
             fact.exec()
 
         except:
@@ -45,6 +45,9 @@ class NormalPlane(Fusion360CommandBase):
     def on_create(self, command: adsk.core.Command, inputs: adsk.core.CommandInputs):
         ao = AppObjects()
 
+        # comp Position check
+        command.isPositionDependent=True
+        
         # event
         onSelect = self.SelectHandler()
         command.select.add(onSelect)
@@ -82,7 +85,7 @@ class NormalPlane(Fusion360CommandBase):
             global _clickPoint
             _clickPoint = None
 
-class ViewPlaneFactry():
+class PlaneFactry():
 
     _pnt = adsk.core.Point3D.cast(None)
     _surf = adsk.fusion.BRepFace.cast(None)
@@ -115,7 +118,7 @@ class ViewPlaneFactry():
 
         # start
         ao = AppObjects()
-        root :adsk.fusion.Component = ao.root_comp
+        comp :adsk.fusion.Component = ao.design.activeComponent
 
         # DesignType check
         desTypes = adsk.fusion.DesignTypes
@@ -124,21 +127,21 @@ class ViewPlaneFactry():
         # Parametric
         baseFeat = adsk.fusion.BaseFeature.cast(None)
         if desTypeParam:
-            baseFeats = root.features.baseFeatures
+            baseFeats = comp.features.baseFeatures
             baseFeat = baseFeats.add()
 
             baseFeat.startEdit()
 
         # create sketch
         global _supportSktName
-        skt :adsk.fusion.Sketch = initSketch(root, _supportSktName)
+        skt :adsk.fusion.Sketch = initSketch(comp, _supportSktName)
         skt.isLightBulbOn = False
 
         # supprt point
         pnt :adsk.fusion.SketchPoint = skt.sketchPoints.add(self._pnt)
 
         # plane
-        planes:adsk.fusion.ConstructionPlanes = root.constructionPlanes
+        planes:adsk.fusion.ConstructionPlanes = comp.constructionPlanes
         initPlane(planes, self._surf, pnt)
 
         # remove sketch
