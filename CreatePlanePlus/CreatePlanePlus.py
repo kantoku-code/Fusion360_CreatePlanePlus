@@ -81,10 +81,6 @@ def addSeparator(
     # 目的のパネル取得
     targetpanel :adsk.core.ToolbarPanel = panels.itemById(panelId)
 
-    # パネル見つかった？
-    if not targetpanel: return
-    targetpanel.isVisible = True
-
     # パネル内のコントロール取得
     controls :adsk.core.ToolbarControls = targetpanel.controls
 
