@@ -79,10 +79,6 @@ def stop():
 def command_created(args: adsk.core.CommandCreatedEventArgs):
     futil.log(f'{CMD_NAME} {args.firingEvent.name}')
 
-    # バグ対策 - ver2.0.13866
-    if isDirect():
-        return
-
     args.command.isPositionDependent = True
 
     # inputs
@@ -188,18 +184,3 @@ def command_destroy(args: adsk.core.CommandEventArgs):
 
     global local_handlers
     local_handlers = []
-
-
-def isDirect():
-    # バグ対策 - ver2.0.13866
-    app: adsk.core.Application = adsk.core.Application.get()
-    des: adsk.fusion.Design = app.activeProduct
-    ui: adsk.core.UserInterface = app.userInterface
-
-    res = des.designType == adsk.fusion.DesignTypes.DirectDesignType
-
-    if res:
-        ui.messageBox('履歴をキャプチャしないモードでは利用出来ません')
-
-    return res
-

@@ -5,6 +5,8 @@ import traceback
 import adsk.fusion
 import adsk.core
 
+DESIGN_TYPES = adsk.fusion.DesignTypes
+
 class PointOnPathPlaneFactry():
     def __init__(self, ):
         pass
@@ -38,22 +40,6 @@ class PointOnPathPlaneFactry():
 
         return pntGeo.isEqualTo(prmPnt)
 
-    # def _getCurveOnPointDistance(
-    #     self,
-    #     crvEntity,
-    #     pntEntity) -> float:
-
-    #     crvGeo: adsk.core.Curve3D = self._getGeo(crvEntity)
-    #     pntGeo: adsk.core.Point3D = self._getGeo(pntEntity)
-
-    #     eva: adsk.core.CurveEvaluator3D = crvGeo.evaluator
-    #     _, prm = eva.getParameterAtPoint(pntGeo)
-    #     _, sPrm, _ = eva.getParameterExtents()
-
-    #     _, length = eva.getLengthAtParameter(sPrm, prm)
-
-    #     return length
-
 
     def _getCurveOnPointRatio(
         self,
@@ -65,10 +51,16 @@ class PointOnPathPlaneFactry():
 
         eva: adsk.core.CurveEvaluator3D = crvGeo.evaluator
         _, prm = eva.getParameterAtPoint(pntGeo)
-        _, sPrm, ePrm = eva.getParameterExtents()
+        _, sPrm, _ = eva.getParameterExtents()
         _, length = eva.getLengthAtParameter(sPrm, prm)
 
-        return length / crvEntity.length
+        retio = length / crvEntity.length
+        if retio < 0:
+            retio = 0
+        elif retio > 1:
+            retio = 1
+
+        return retio
 
 
     def initPlane(
@@ -82,12 +74,6 @@ class PointOnPathPlaneFactry():
             ratio: float) -> adsk.fusion.ConstructionPlane:
 
             dist: adsk.core.ValueInput = adsk.core.ValueInput.createByReal(ratio)
-
-            # unitMgr: adsk.core.UnitsManager = plns.component.parentDesign.unitsManager
-            
-            # dist: adsk.core.ValueInput = adsk.core.ValueInput.createByString(
-            #     unitMgr.formatInternalValue(length)
-            # )
 
             plnInput: adsk.fusion.ConstructionPlaneInput = plns.createInput()
             if plnInput.setByDistanceOnPath(crvEntity, dist):
@@ -112,17 +98,19 @@ class PointOnPathPlaneFactry():
         # ****
 
         comp: adsk.fusion.Component = getComp(crvEntity)
-        # des: adsk.fusion.Design = comp.parentDesign
+        des: adsk.fusion.Design = comp.parentDesign
 
-        # length = self._getCurveOnPointDistance(crvEntity, pntEntity)
+        # direct mode
+        returnDesignType = False
+        if des.designType == DESIGN_TYPES.DirectDesignType:
+            returnDesignType = True
+            crvToken = crvEntity.entityToken
+            pntToken = pntEntity.entityToken
+            des.designType = DESIGN_TYPES.ParametricDesignType
+            crvEntity = des.findEntityByToken(crvToken)[0]
+            pntEntity = des.findEntityByToken(pntToken)[0]
+
         ratio = self._getCurveOnPointRatio(crvEntity, pntEntity)
-
-        # baseFeat: adsk.fusion.BaseFeature = None
-        # if des.designType == adsk.fusion.DesignTypes.ParametricDesignType:
-        #     baseFeat = comp.features.baseFeatures.add()
-
-        # if baseFeat:
-        #     baseFeat.startEdit()
 
         # plane
         constPlanes: adsk.fusion.ConstructionPlanes = comp.constructionPlanes
@@ -132,7 +120,8 @@ class PointOnPathPlaneFactry():
             ratio
         )
 
-        # if baseFeat:
-        #     baseFeat.finishEdit()
+        # direct mode
+        if returnDesignType:
+            des.designType = DESIGN_TYPES.DirectDesignType
 
         return constPlane

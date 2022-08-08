@@ -20,7 +20,7 @@ Autodesk社 ソフト <b>"Fusion360" </b> のアドインです。
 
 + [法線方向の平面](./CreatePlanePlus/commands/NormalPlane/) : クリックした部分の面の法線方向に平面を作成します。「点で面に接する平面」コマンドに近いですが、事前に点を用意する必要はありません。
 + [画面向きの平面](./CreatePlanePlus/commands/ViewPlane/) : クリックした部分を中心とし、画面の向き方向のコンストラクション平面を作成します。
-+ [パス上の点平面](./CreatePlanePlus/commands/PointOnPathPlane/) : "パスに沿った平面" に近い操作ですが、パス上の点の位置で平面を作成します。※ダイレクトモードでは使用出来ません。
++ [パス上の点平面](./CreatePlanePlus/commands/PointOnPathPlane/) : "パスに沿った平面" に近い操作ですが、パス上の点の位置で平面を作成します。
 + [極平面](./CreatePlanePlus/commands/PolarPlane/) : ボディと方向を指定し、極平面を作成します。
 
 
