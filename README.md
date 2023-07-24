@@ -22,13 +22,8 @@ Autodesk社 ソフト <b>"Fusion360" </b> のアドインです。
 + [画面向きの平面](./CreatePlanePlus/commands/ViewPlane/) : クリックした部分を中心とし、画面の向き方向のコンストラクション平面を作成します。
 + [パス上の点平面](./CreatePlanePlus/commands/PointOnPathPlane/) : "パスに沿った平面" に近い操作ですが、パス上の点の位置で平面を作成します。
 + [極平面](./CreatePlanePlus/commands/PolarPlane/) : ボディと方向を指定し、極平面を作成します。
++ [フィッティング平面](./CreatePlanePlus/commands/PlanarFitting/) : 三個以上の指定した点から平面を作成します。
 
-
-
-## 動作:
-以下の環境にて確認。
-+ Fusion360 Ver2.0.13866
-+ Windows10 64bit Pro,Home
 
 ## ライセンス:
 MIT

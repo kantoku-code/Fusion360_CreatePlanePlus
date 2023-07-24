@@ -7,6 +7,7 @@ from .NormalPlane import entry as normalPlane
 from .ViewPlane import entry as viewPlane
 from .PointOnPathPlane import entry as pointOnPathPlane
 from .PolarPlane import entry as polarPlane
+from .PlanarFitting import entry as planarFitting
 
 # TODO add your imported modules to this list.
 # Fusion will automatically call the start() and stop() functions.
@@ -15,6 +16,7 @@ commands = [
     pointOnPathPlane,
     viewPlane,
     normalPlane,
+    planarFitting,
 ]
 
 
