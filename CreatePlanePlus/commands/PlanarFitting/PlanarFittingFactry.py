@@ -1,4 +1,4 @@
-# FusionAPI_python 
+# FusionAPI_python
 # Author-kantoku
 
 import traceback
@@ -15,7 +15,6 @@ if not PACKAGE_PATH in sys.path:
 
 import numpy as np
 
-
 class PlanarFittingFactry():
     def __init__(self, ):
         pass
@@ -23,17 +22,19 @@ class PlanarFittingFactry():
     def get_point3d(
         self,
         entity,
-    ) -> core.Point3D:
+    ) -> list[core.Point3D]:
 
         if entity.objectType == fusion.SketchPoint.classType():
-            return entity.worldGeometry
+            return [entity.worldGeometry]
         elif entity.objectType == fusion.BRepVertex.classType():
-            return entity.geometry
+            return [entity.geometry]
         elif entity.objectType == fusion.ConstructionPoint.classType():
-            return entity.geometry
+            return [entity.geometry]
+        elif entity.objectType == fusion.MeshBody.classType():
+            meshBody: fusion.MeshBody = entity
+            return list(meshBody.displayMesh.nodeCoordinates)
         else:
             return None
-
 
     def create_fit_plane(
         self,

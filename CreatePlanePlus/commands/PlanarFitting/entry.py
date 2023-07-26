@@ -92,31 +92,42 @@ def command_created(args: core.CommandCreatedEventArgs):
     # inputs
     inputs = args.command.commandInputs
 
-    global _selIpt, _selCountMin
+    global _selIpt
     _selIpt = inputs.addSelectionInput(
         'dlgSel',
-        '点',
-        '3個以上の点を選択'
+        '点/メッシュボディ',
+        '3個以上の点、又はメッシュボディを選択'
     )
-    _selIpt.setSelectionLimits(_selCountMin)
+    _selIpt.setSelectionLimits(0)
     _selIpt.addSelectionFilter("SketchPoints")
     _selIpt.addSelectionFilter("Vertices")
     _selIpt.addSelectionFilter("ConstructionPoints")
+    _selIpt.addSelectionFilter("MeshBodies")
 
     # events
-    futil.add_handler(args.command.executePreview,
-                      command_preview, local_handlers=local_handlers)
-    futil.add_handler(args.command.destroy, command_destroy,
-                      local_handlers=local_handlers)
+    futil.add_handler(
+        args.command.executePreview,
+        command_preview,
+        local_handlers=local_handlers
+    )
+    futil.add_handler(
+        args.command.validateInputs,
+        command_validateInputs,
+        local_handlers=local_handlers
+    )
+    futil.add_handler(
+        args.command.destroy,
+        command_destroy,
+        local_handlers=local_handlers
+    )
 
     global _fact
     _fact = PlanarFittingFactry()
 
 
-def command_preview(args: core.CommandEventArgs):
-    futil.log(f'{CMD_NAME} {args.firingEvent.name}')
+def get_points() -> list[core.Point3D]:
 
-    global _selIpt, _selCountMin
+    global _selIpt
     ents = [_selIpt.selection(idx).entity for idx in range(
         _selIpt.selectionCount)]
 
@@ -127,10 +138,23 @@ def command_preview(args: core.CommandEventArgs):
             [_fact.get_point3d(e) for e in ents]
         )
     )
-    if len(points) < _selCountMin:
-        return
 
-    _fact.create_fit_plane(points)
+    return sum(points, [])
+
+
+def command_validateInputs(args: core.ValidateInputsEventArgs):
+    futil.log(f'{CMD_NAME} {args.firingEvent.name}')
+
+    global _selCountMin
+    args.areInputsValid = False if _selCountMin > len(get_points()) else True
+
+
+def command_preview(args: core.CommandEventArgs):
+    futil.log(f'{CMD_NAME} {args.firingEvent.name}')
+
+    _fact.create_fit_plane(
+        get_points()
+    )
 
     args.isValidResult = True
 
