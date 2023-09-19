@@ -1,5 +1,8 @@
 # Change of Fusion360_CreatePlanePlus
 
+## 0.0.10
++ Fusion360 Ver2.0.17244でpython3.11.1に変更された事に伴い,numpy1.26.0に変更
+
 ## 0.0.9
 + [フィッティング平面] メッシュボディをサポート
 
